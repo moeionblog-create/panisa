@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PANISA – สรุปยอดสั่งซื้อ v04</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Sarabun', sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 16px; min-height: 100vh; }
+  .wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+  h1 { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .version-tag { font-size: 12px; color: #888; margin-bottom: 12px; }
+  .card { background: #16213e; border-radius: 14px; padding: 16px; border: 1px solid #0f3460; }
+  .card-title { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px; }
+  .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { font-size: 12px; color: #aaa; }
+  .field input, .field select, .field textarea { width: 100%; font-family: inherit; font-size: 13px; padding: 8px 10px; border-radius: 8px; border: 1px solid #0f3460; background: #0d1b2a; color: #e0e0e0; }
+  .field textarea { resize: vertical; height: 60px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 4px; }
+  .tab-btn { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid #0f3460; background: #0d1b2a; color: #aaa; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 500; }
+  .tab-btn.active { background: #1a6fce; color: #fff; border-color: #1a6fce; }
+  .tab-content { display: none; }
+  .tab-content.active { display: flex; flex-direction: column; gap: 12px; }
+  .prod-item { display: grid; grid-template-columns: 60px 1fr auto; gap: 8px; align-items: center; background: #0d1b2a; border: 1px solid #0f3460; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; }
+  .prod-code { font-size: 11px; font-weight: 700; color: #1a6fce; }
+  .prod-name-text { font-size: 13px; color: #e0e0e0; }
+  .prod-actions { display: flex; gap: 4px; }
+  .prod-edit-btn, .prod-del-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 4px; border-radius: 4px; }
+  .add-prod-form { background: #0d1b2a; border: 1px dashed #0f3460; border-radius: 10px; padding: 12px; margin-top: 10px; }
+  .add-prod-form-title { font-size: 12px; font-weight: 600; color: #aaa; margin-bottom: 10px; }
+  .add-prod-row { display: grid; grid-template-columns: 80px 1fr auto; gap: 8px; align-items: end; }
+  .add-prod-row .field { margin-bottom: 0; }
+  .add-prod-btn { padding: 7px 14px; background: #1a6fce; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-family: inherit; white-space: nowrap; }
+  .item-block { background: #0d1b2a; border: 1px solid #0f3460; border-radius: 10px; padding: 12px; margin-bottom: 10px; position: relative; }
+  .item-num { font-size: 12px; font-weight: 600; color: #888; margin-bottom: 10px; }
+  .remove-btn { position: absolute; top: 8px; right: 8px; background: #16213e; border: none; cursor: pointer; color: #888; font-size: 14px; width: 24px; height: 24px; border-radius: 6px; }
+  .piece-row { display: grid; grid-template-columns: 120px 80px 1fr 28px; gap: 6px; align-items: end; margin-bottom: 6px; }
+  .piece-row .field { margin-bottom: 0; }
+  .piece-row .field label { font-size: 11px; }
+  .del-piece-btn { background: none; border: none; cursor: pointer; color: #888; font-size: 14px; padding: 0; align-self: flex-end; margin-bottom: 2px; }
+  .add-piece-btn { font-size: 12px; padding: 4px 12px; border-radius: 20px; cursor: pointer; border: 1px dashed #0f3460; background: none; color: #888; margin: 4px 0 10px; }
+  .add-piece-btn:hover { border-color: #1a6fce; color: #1a6fce; }
+  .price-section { border-top: 1px solid #0f3460; padding-top: 10px; margin-top: 6px; }
+  .price-section-title { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .note-section { border-top: 1px solid #0f3460; padding-top: 10px; margin-top: 6px; }
+  .shipping-type-toggle { display: flex; gap: 8px; margin-bottom: 10px; }
+  .shipping-type-toggle button { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #0f3460; background: #0d1b2a; color: #aaa; cursor: pointer; font-size: 13px; font-family: inherit; }
+  .shipping-type-toggle button.active { background: #1a6fce; color: #fff; border-color: #1a6fce; }
+  .promo-item { background: #0d1b2a; border: 1px solid #0f3460; border-radius: 10px; padding: 10px 12px; position: relative; margin-bottom: 8px; }
+  .del-promo-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer; color: #888; font-size: 14px; }
+  .add-promo-btn { width: 100%; padding: 8px; border: 1px dashed #0f3460; background: none; border-radius: 8px; font-size: 13px; cursor: pointer; color: #888; margin-top: 4px; font-family: inherit; }
+  .add-promo-btn:hover { border-color: #1a6fce; color: #1a6fce; }
+  .add-item-btn { width: 100%; padding: 9px; border: 1.5px dashed #0f3460; background: none; border-radius: 10px; font-size: 13px; cursor: pointer; color: #888; font-family: inherit; }
+  .add-item-btn:hover { border-color: #1a6fce; color: #1a6fce; }
+  .total-bar { font-size: 16px; font-weight: 700; color: #fff; padding: 10px 0 4px; }
+  .generate-btn { width: 100%; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; background: #1a6fce; color: #fff; border: none; border-radius: 12px; font-family: inherit; }
+  .generate-btn:hover { background: #1559a8; }
+  .result-box { background: #1a6fce; color: #fff; border-radius: 14px; padding: 16px 18px; font-size: 14px; line-height: 2; white-space: pre-wrap; font-family: inherit; margin-top: 14px; }
+  .copy-btn { width: 100%; margin-top: 8px; background: #1a6fce; color: #fff; border: none; border-radius: 10px; padding: 11px; cursor: pointer; font-size: 14px; font-weight: 500; font-family: inherit; }
+  .copy-btn:hover { background: #1559a8; }
+  .save-btn { padding: 5px 10px; background: #16a34a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: inherit; }
+  .cancel-btn { padding: 5px 10px; background: #16213e; color: #aaa; border: 1px solid #0f3460; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>👗 PANISA – ฟอร์มสรุปยอดสั่งซื้อ</h1>
+    <div class="version-tag">เวอร์ชัน 04</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('order')">📋 สรุปยอด</button>
+    <button class="tab-btn" onclick="switchTab('products')">⚙️ จัดการสินค้า</button>
+  </div>
+
+  <!-- TAB ORDER -->
+  <div id="tab-order" class="tab-content active">
+    <div class="card">
+      <div class="card-title">ข้อมูลลูกค้า</div>
+      <div class="field"><label>ชื่อลูกค้า (ถ้ามี)</label><input type="text" id="customerName" placeholder="เช่น คุณมาลี"></div>
+      <div class="card-title" style="margin-top:14px;">สินค้า</div>
+      <div id="items-container"></div>
+      <button class="add-item-btn" onclick="addItem()">+ เพิ่มรายการสินค้า</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">การจัดส่ง</div>
+      <div class="shipping-type-toggle">
+        <button id="ship-ems" class="active" onclick="setShipType('ems')">EMS</button>
+        <button id="ship-cod" onclick="setShipType('cod')">ชำระเงินปลายทาง</button>
+      </div>
+      <div class="row2">
+        <div class="field"><label>ค่าจัดส่ง (฿)</label><input type="number" id="shippingAmt" placeholder="0 = ฟรี" oninput="updateTotal()"></div>
+        <div class="field" id="cod-fee-wrap" style="display:none"><label>ค่าธรรมเนียม COD (฿)</label><input type="number" id="codFee" value="20" oninput="updateTotal()"></div>
+      </div>
+      <div class="card-title" style="margin-top:14px;">โปรโมชัน</div>
+      <div id="promo-list"></div>
+      <button class="add-promo-btn" onclick="addPromo()">+ เพิ่มโปรโมชัน</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">บัญชีรับโอน</div>
+      <div class="field">
+        <label>เลือกบัญชี</label>
+        <select id="bankPreset" onchange="onBankPreset()">
+          <option value="">-- เลือกบัญชี --</option>
+          <option value="SCB">SCB ไทยพาณิชย์ | 3664875950 | ชัยสิทธิ์ แช่คู</option>
+          <option value="TTB">TTB ทหารไทยธนชาต | 924-2-89878-2 | ชัยสิทธิ์ แช่คู</option>
+          <option value="custom">กรอกเอง</option>
+        </select>
+      </div>
+      <div class="row2">
+        <div class="field"><label>ธนาคาร</label><input type="text" id="bankName" placeholder="ชื่อธนาคาร"></div>
+        <div class="field"><label>เลขบัญชี</label><input type="text" id="accNum" placeholder="เลขบัญชี"></div>
+      </div>
+      <div class="field"><label>ชื่อบัญชี</label><input type="text" id="accName" placeholder="ชื่อบัญชี"></div>
+    </div>
+
+    <div class="total-bar" id="total-preview"></div>
+    <button class="generate-btn" onclick="generate()">สร้างสรุปยอด</button>
+    <div id="result-area" style="display:none">
+      <div class="result-box" id="result-text"></div>
+      <button class="copy-btn" onclick="copyText()">📋 คัดลอกข้อความ</button>
+    </div>
+  </div>
+
+  <!-- TAB PRODUCTS -->
+  <div id="tab-products" class="tab-content">
+    <div class="card">
+      <div class="card-title">รายการสินค้าทั้งหมด</div>
+      <div id="prod-list"></div>
+      <div class="add-prod-form">
+        <div class="add-prod-form-title">➕ เพิ่มสินค้าใหม่</div>
+        <div class="add-prod-row">
+          <div class="field"><label>รหัส</label><input type="text" id="new-code" placeholder="p12"></div>
+          <div class="field"><label>ชื่อสินค้า</label><input type="text" id="new-name" placeholder="เช่น ชุดผ้าไทยสีแดง ลายดอกไม้"></div>
+          <button class="add-prod-btn" onclick="addProduct()">เพิ่ม</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let PRODUCTS = [
+  {code:'p01',name:'ชุดผ้าไทยสีน้ำเงิน ลายดอกจิก'},
+  {code:'p02',name:'ชุดผ้าไทย ลายขอพระราชทาน (ส้ม)'},
+  {code:'p02',name:'ชุดผ้าไทย ลายขอพระราชทาน (แดง)'},
+  {code:'p02',name:'ชุดผ้าไทย ลายขอพระราชทาน (กรมท่า)'},
+  {code:'p05',name:'ชุดผ้าไทยสีฟ้า ลายข้าวหลามตัด'},
+  {code:'p05',name:'ชุดผ้าไทยสีม่วง ลายข้าวหลามตัด'},
+  {code:'p06',name:'ชุดผ้าไทย ลายลูกแก้ว (ฟ้าคราม)'},
+  {code:'p06',name:'ชุดผ้าไทย ลายลูกแก้ว (ชมพู)'},
+  {code:'p06',name:'ชุดผ้าไทย ลายลูกแก้ว (ม่วง)'},
+  {code:'p07',name:'ชุดผ้าไทยสีฟ้า ลายขอพระราชทาน'},
+  {code:'p08',name:'ชุดผ้าไทยสีเหลือง ลายขอกนกพระราชทาน'},
+  {code:'p09',name:'ชุดทำงาน ผ้าทวิต กาแลนด์ (ดำ)'},
+  {code:'p09',name:'ชุดทำงาน ผ้าทวิต กาแลนด์ (ขาวงาช้าง)'},
+  {code:'p10',name:'เดรสปกเชิ้ต (ดำ)'},
+  {code:'p11',name:'ชุดไทยจิตรลดา ไหมเทียม (ดำ)'},
+  {code:'p11',name:'ชุดไทยเรือนต้น ไหมเทียม (ดำ)'},
+];
+const TYPES = ['เซต','เสื้อ','กระโปรงสอบ','กระโปรงบาน','กระโปรงยาว','กระโปรงกระดิ่ง','ผ้าถุงป้าย','เดรส'];
+const SIZES = ['XS','S','M','L','XL','XXL','3XL','4XL','5XL','custom'];
+const PROMO_PRESETS = ['ฟรี EMS','ฟรีค่าธรรมเนียมปลายทาง','พิเศษลูกค้าเก่า','ลดพิเศษ','กำหนดเอง'];
+const BANKS = {
+  SCB:{name:'SCB ไทยพาณิชย์',acc:'3664875950',holder:'ชัยสิทธิ์ แช่คู'},
+  TTB:{name:'TTB ทหารไทยธนชาต',acc:'924-2-89878-2',holder:'ชัยสิทธิ์ แช่คู'},
+};
+let itemCount=0,pieceCount=0,promoCount=0,shipType='ems';
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&tab==='order')||(i===1&&tab==='products')));
+  document.getElementById('tab-order').classList.toggle('active',tab==='order');
+  document.getElementById('tab-products').classList.toggle('active',tab==='products');
+  if(tab==='products')renderProdList();
+}
+
+function renderProdList(){
+  const el=document.getElementById('prod-list');
+  if(!PRODUCTS.length){el.innerHTML='<div style="font-size:13px;color:#888;padding:8px 0">ยังไม่มีสินค้า</div>';return;}
+  el.innerHTML=PRODUCTS.map((p,i)=>`
+    <div class="prod-item" id="prodrow-${i}">
+      <div class="prod-code">${p.code}</div>
+      <div class="prod-name-text">${p.name}</div>
+      <div class="prod-actions">
+        <button class="prod-edit-btn" onclick="editProduct(${i})">✏️</button>
+        <button class="prod-del-btn" onclick="deleteProduct(${i})">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function editProduct(i){
+  const p=PRODUCTS[i];
+  const row=document.getElementById('prodrow-'+i);
+  row.innerHTML=`<div style="display:grid;grid-template-columns:70px 1fr auto auto;gap:6px;align-items:center;grid-column:1/-1">
+    <input type="text" id="edit-code-${i}" value="${p.code}" style="font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid #0f3460;background:#16213e;color:#e0e0e0;">
+    <input type="text" id="edit-name-${i}" value="${p.name}" style="font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid #0f3460;background:#16213e;color:#e0e0e0;">
+    <button class="save-btn" onclick="saveProduct(${i})">บันทึก</button>
+    <button class="cancel-btn" onclick="renderProdList()">ยกเลิก</button>
+  </div>`;
+}
+
+function saveProduct(i){
+  const code=document.getElementById('edit-code-'+i)?.value.trim();
+  const name=document.getElementById('edit-name-'+i)?.value.trim();
+  if(!code||!name){alert('กรุณากรอกรหัสและชื่อสินค้า');return;}
+  PRODUCTS[i]={code,name};
+  renderProdList();refreshAllProductDropdowns();
+}
+
+function deleteProduct(i){
+  if(!confirm(`ลบ "${PRODUCTS[i].name}" ออกจากรายการ?`))return;
+  PRODUCTS.splice(i,1);
+  renderProdList();refreshAllProductDropdowns();
+}
+
+function addProduct(){
+  const code=document.getElementById('new-code').value.trim();
+  const name=document.getElementById('new-name').value.trim();
+  if(!code||!name){alert('กรุณากรอกรหัสและชื่อสินค้า');return;}
+  PRODUCTS.push({code,name});
+  document.getElementById('new-code').value='';
+  document.getElementById('new-name').value='';
+  renderProdList();refreshAllProductDropdowns();
+}
+
+const prodOpts=()=>'<option value="">-- เลือกรุ่นสินค้า --</option>'+PRODUCTS.map(p=>`<option value="${p.name}">(${p.code}) ${p.name}</option>`).join('');
+const typeOpts=()=>'<option value="">ประเภท</option>'+TYPES.map(t=>`<option>${t}</option>`).join('');
+const sizeOpts=()=>'<option value="">ไซส์</option>'+SIZES.map(s=>`<option>${s}</option>`).join('');
+const promoOpts=()=>PROMO_PRESETS.map(p=>`<option>${p}</option>`).join('');
+
+function refreshAllProductDropdowns(){
+  document.querySelectorAll('[id^="prod-"]').forEach(sel=>{
+    if(sel.tagName==='SELECT'){const cur=sel.value;sel.innerHTML=prodOpts();sel.value=cur;}
+  });
+}
+
+function onBankPreset(){
+  const val=document.getElementById('bankPreset').value;
+  if(BANKS[val]){document.getElementById('bankName').value=BANKS[val].name;document.getElementById('accNum').value=BANKS[val].acc;document.getElementById('accName').value=BANKS[val].holder;}
+  else if(val==='custom'){document.getElementById('bankName').value='';document.getElementById('accNum').value='';document.getElementById('accName').value='';}
+}
+
+function setShipType(type){
+  shipType=type;
+  document.getElementById('ship-ems').classList.toggle('active',type==='ems');
+  document.getElementById('ship-cod').classList.toggle('active',type==='cod');
+  document.getElementById('cod-fee-wrap').style.display=type==='cod'?'':'none';
+  updateTotal();
+}
+
+function addItem(){
+  itemCount++;const id=itemCount;
+  const div=document.createElement('div');div.className='item-block';div.id='item-'+id;
+  div.innerHTML=`
+    <button class="remove-btn" onclick="removeItem(${id})">✕</button>
+    <div class="item-num">รายการที่ ${id}</div>
+    <div class="field"><label>รุ่นสินค้า</label><select id="prod-${id}">${prodOpts()}</select></div>
+    <div style="font-size:11px;color:#888;margin-bottom:6px;">ชิ้นที่สั่ง</div>
+    <div id="pieces-${id}"></div>
+    <button class="add-piece-btn" onclick="addPiece(${id})">+ เพิ่มชิ้น</button>
+    <div class="price-section">
+      <div class="price-section-title">ราคา</div>
+      <div class="row2">
+        <div class="field"><label>ราคาปกติ (฿)</label><input type="number" id="price-${id}" placeholder="0" oninput="updateTotal()"></div>
+        <div class="field"><label>ราคาโปร (฿)</label><input type="number" id="sale-${id}" placeholder="ถ้ามี" oninput="updateTotal()"></div>
+      </div>
+      <div class="field"><label>ค่าไซส์พิเศษ (฿)</label><input type="number" id="extra-${id}" placeholder="0" oninput="updateTotal()"></div>
+    </div>
+    <div class="note-section">
+      <div class="field" style="margin-bottom:0"><label>📝 Note</label><textarea id="itemnote-${id}" placeholder="เช่น ลูกค้าขอห่อของขวัญ"></textarea></div>
+    </div>`;
+  document.getElementById('items-container').appendChild(div);addPiece(id);updateTotal();
+}
+
+function addPiece(itemId){
+  pieceCount++;const pid=pieceCount;
+  const wrap=document.createElement('div');wrap.id='piecewrap-'+pid;
+  wrap.innerHTML=`
+    <div class="piece-row">
+      <div class="field"><label>ประเภท</label><select id="ptype-${pid}">${typeOpts()}</select></div>
+      <div class="field"><label>ไซส์</label><select id="psize-${pid}" onchange="onSizeChange(${pid})">${sizeOpts()}</select></div>
+      <div class="field"><label>หมายเหตุชิ้น</label><input type="text" id="pnote-${pid}" placeholder="เช่น ผ้าถุงป้าย"></div>
+      <button class="del-piece-btn" onclick="removePiece(${pid})">🗑</button>
+    </div>
+    <div id="csize-${pid}" style="display:none;margin-bottom:6px">
+      <input type="text" id="pcustom-${pid}" placeholder="ระบุไซส์" style="font-size:12px;width:120px;padding:5px 8px;border-radius:6px;border:1px solid #0f3460;background:#0d1b2a;color:#e0e0e0;">
+    </div>`;
+  document.getElementById('pieces-'+itemId).appendChild(wrap);
+}
+
+function onSizeChange(pid){document.getElementById('csize-'+pid).style.display=document.getElementById('psize-'+pid).value==='custom'?'':'none';}
+function removePiece(pid){document.getElementById('piecewrap-'+pid)?.remove();}
+function removeItem(id){document.getElementById('item-'+id)?.remove();updateTotal();}
+
+function addPromo(){
+  promoCount++;const pid=promoCount;
+  const div=document.createElement('div');div.className='promo-item';div.id='promo-'+pid;
+  div.innerHTML=`
+    <button class="del-promo-btn" onclick="removePromo(${pid})">✕</button>
+    <div class="row2" style="padding-right:24px">
+      <div class="field"><label>ประเภทโปร</label><select id="promotype-${pid}" onchange="onPromoTypeChange(${pid})">${promoOpts()}</select></div>
+      <div class="field"><label>จำนวนเงิน (฿)</label><input type="number" id="promoamt-${pid}" placeholder="0" oninput="updateTotal()"></div>
+    </div>
+    <div class="field" id="promocustom-wrap-${pid}" style="display:none;margin-top:4px">
+      <label>ระบุชื่อโปร</label><input type="text" id="promocustom-${pid}" placeholder="เช่น ส่วนลดพิเศษ">
+    </div>`;
+  document.getElementById('promo-list').appendChild(div);updateTotal();
+}
+function onPromoTypeChange(pid){document.getElementById('promocustom-wrap-'+pid).style.display=document.getElementById('promotype-'+pid).value==='กำหนดเอง'?'':'none';updateTotal();}
+function removePromo(pid){document.getElementById('promo-'+pid)?.remove();updateTotal();}
+
+function updateTotal(){
+  let sum=0;
+  document.querySelectorAll('.item-block').forEach(el=>{
+    const id=el.id.replace('item-','');
+    const sale=parseFloat(document.getElementById('sale-'+id)?.value)||0;
+    const price=parseFloat(document.getElementById('price-'+id)?.value)||0;
+    const extra=parseFloat(document.getElementById('extra-'+id)?.value)||0;
+    sum+=(sale||price)+extra;
+  });
+  document.querySelectorAll('.promo-item').forEach(el=>{
+    const pid=el.id.replace('promo-','');
+    const type=document.getElementById('promotype-'+pid)?.value||'';
+    const amt=parseFloat(document.getElementById('promoamt-'+pid)?.value)||0;
+    if(type!=='ฟรี EMS'&&type!=='ฟรีค่าธรรมเนียมปลายทาง')sum-=amt;
+  });
+  const shipAmt=parseFloat(document.getElementById('shippingAmt')?.value)||0;
+  const codFee=shipType==='cod'?(parseFloat(document.getElementById('codFee')?.value)||0):0;
+  sum+=shipAmt+codFee;
+  const items=document.querySelectorAll('.item-block');
+  document.getElementById('total-preview').textContent=items.length>0?'ยอดรวมโดยประมาณ: '+Math.max(0,sum).toLocaleString()+' บาท':'';
+}
+
+function getPieces(itemId){
+  const result=[];
+  for(const wrap of document.getElementById('pieces-'+itemId).children){
+    const pid=wrap.id.replace('piecewrap-','');
+    const type=document.getElementById('ptype-'+pid)?.value||'';
+    const sizeRaw=document.getElementById('psize-'+pid)?.value||'';
+    const size=sizeRaw==='custom'?(document.getElementById('pcustom-'+pid)?.value?.trim()||''):sizeRaw;
+    const note=document.getElementById('pnote-'+pid)?.value?.trim()||'';
+    if(type)result.push({type,size,note});
+  }
+  return result;
+}
+
+function generate(){
+  const items=document.querySelectorAll('.item-block');
+  if(!items.length){alert('กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ');return;}
+  const custName=document.getElementById('customerName').value.trim();
+  let lines=[];
+  lines.push('ขออนุญาตแจ้งยอดสั่งซื้อของท่าน'+(custName?' *'+custName+'*':''));
+  lines.push('👗 แบรนด์ PANISA – ชุดทำงานผ้าไทย 🇹🇭');
+  lines.push('');
+  let total=0;
+  items.forEach(el=>{
+    const id=el.id.replace('item-','');
+    const prod=document.getElementById('prod-'+id)?.value||'';
+    const price=parseFloat(document.getElementById('price-'+id)?.value)||0;
+    const sale=parseFloat(document.getElementById('sale-'+id)?.value)||0;
+    const extra=parseFloat(document.getElementById('extra-'+id)?.value)||0;
+    const itemNote=document.getElementById('itemnote-'+id)?.value?.trim()||'';
+    total+=(sale||price)+extra;
+    if(prod)lines.push('✅ '+prod);
+    getPieces(id).forEach(p=>{let pl='👗 '+p.type;if(p.size)pl+=' size '+p.size;if(p.note)pl+=' / '+p.note;lines.push(pl);});
+    if(price&&sale&&price!==sale)lines.push('💰 ราคาปกติ: '+price.toLocaleString()+' บาท');
+    if(sale){let l='🎉 โปรพิเศษ! '+sale.toLocaleString()+' บาท';if(extra)l+=' + ไซส์พิเศษ '+extra.toLocaleString()+' บาท';lines.push(l);}
+    else if(price)lines.push('💰 ราคา '+price.toLocaleString()+' บาท');
+    if(itemNote)lines.push('📝 Note: '+itemNote);
+    lines.push('');
+  });
+  const promos=document.querySelectorAll('.promo-item');
+  promos.forEach(el=>{
+    const pid=el.id.replace('promo-','');
+    const type=document.getElementById('promotype-'+pid)?.value||'';
+    const amt=parseFloat(document.getElementById('promoamt-'+pid)?.value)||0;
+    const custom=document.getElementById('promocustom-'+pid)?.value?.trim()||'';
+    const label=type==='กำหนดเอง'?(custom||'ส่วนลดพิเศษ'):type;
+    if(type==='ฟรี EMS')lines.push('🏷️ '+label);
+    else if(type==='ฟรีค่าธรรมเนียมปลายทาง')lines.push('🏷️ พิเศษ! ฟรีค่าธรรมเนียมปลายทาง');
+    else if(amt){lines.push('🏷️ '+label+': ลด '+amt.toLocaleString()+' บาท');total-=amt;}
+  });
+  if(promos.length)lines.push('');
+  const shipAmt=parseFloat(document.getElementById('shippingAmt')?.value)||0;
+  const codFee=shipType==='cod'?(parseFloat(document.getElementById('codFee')?.value)||0):0;
+  total+=shipAmt+codFee;
+  if(shipType==='ems'){
+    if(shipAmt===0)lines.push('💳 ยอดสุทธิ: '+Math.max(0,total).toLocaleString()+' บาท (ส่งฟรี EMS)');
+    else{lines.push('🚚 ค่าส่ง EMS: '+shipAmt.toLocaleString()+' บาท');lines.push('💳 ยอดสุทธิ: '+Math.max(0,total).toLocaleString()+' บาท');}
+  } else {
+    if(shipAmt)lines.push('🚚 ค่าส่ง: '+shipAmt.toLocaleString()+' บาท');
+    lines.push('💵 ค่าธรรมเนียมปลายทาง: '+codFee.toLocaleString()+' บาท');
+    lines.push('💳 ยอดสุทธิ: '+Math.max(0,total).toLocaleString()+' บาท (ชำระเงินปลายทาง)');
+  }
+  lines.push('','——————————————');
+  lines.push('🏦💙 ธนาคาร '+document.getElementById('bankName').value);
+  lines.push('เลขที่บัญชี: '+document.getElementById('accNum').value);
+  lines.push('ชื่อบัญชี: '+document.getElementById('accName').value);
+  lines.push('','📸 ส่งสลิป + แจ้งที่อยู่ได้เลยนะคะ');
+  lines.push('🙏 ขอบพระคุณ'+(custName?'คุณ'+custName:'')+' มากนะคะ ❤️');
+  document.getElementById('result-text').textContent=lines.join('\n');
+  document.getElementById('result-area').style.display='';
+  document.getElementById('result-area').scrollIntoView({behavior:'smooth'});
+}
+
+function copyText(){
+  navigator.clipboard.writeText(document.getElementById('result-text').textContent).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='✅ คัดลอกแล้ว!';
+    setTimeout(()=>btn.textContent='📋 คัดลอกข้อความ',2000);
+  });
+}
+
+addItem();
+</script>
+</body>
+</html>
