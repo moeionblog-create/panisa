@@ -398,12 +398,14 @@ function generate(){
     lines.push('💵 ค่าธรรมเนียมปลายทาง: '+codFee.toLocaleString()+' บาท');
     lines.push('💳 ยอดสุทธิ: '+Math.max(0,total).toLocaleString()+' บาท (ชำระเงินปลายทาง)');
   }
-  lines.push('','——————————————');
-  lines.push('🏦💙 ธนาคาร '+document.getElementById('bankName').value);
-  lines.push('เลขที่บัญชี: '+document.getElementById('accNum').value);
-  lines.push('ชื่อบัญชี: '+document.getElementById('accName').value);
-  lines.push('','📸 ส่งสลิป + แจ้งที่อยู่ได้เลยนะคะ');
-  lines.push('🙏 ขอบพระคุณ'+(custName?'คุณ'+custName:'')+' มากนะคะ ❤️');
+  if(shipType==='ems'){
+    lines.push('','——————————————');
+    lines.push('🏦💙 ธนาคาร '+document.getElementById('bankName').value);
+    lines.push('เลขที่บัญชี: '+document.getElementById('accNum').value);
+    lines.push('ชื่อบัญชี: '+document.getElementById('accName').value);
+    lines.push('','📸 ส่งสลิป + แจ้งที่อยู่ได้เลยนะครับ');
+    lines.push('🙏 ขอบพระคุณ'+(custName?'คุณ'+custName:'')+' มากนะครับ ❤️');
+  }
   document.getElementById('result-text').textContent=lines.join('\n');
   document.getElementById('result-area').style.display='';
   document.getElementById('result-area').scrollIntoView({behavior:'smooth'});
