@@ -163,6 +163,8 @@ let PRODUCTS = [
   {code:'p10',name:'เดรสปกเชิ้ต (ดำ)'},
   {code:'p11',name:'ชุดไทยจิตรลดา ไหมเทียม (ดำ)'},
   {code:'p11',name:'ชุดไทยเรือนต้น ไหมเทียม (ดำ)'},
+  {code:'ดด001',name:'เดรส ปกเชิ้ต Old money - ดำ',price:1600,sale:1000},
+  {code:'ดด001',name:'เดรส ปกเชิ้ต Old money - เบจ',price:1600,sale:1000},
 ];
 const TYPES = ['เซต','เสื้อ','กระโปรงสอบ','กระโปรงบาน','กระโปรงยาว','กระโปรงกระดิ่ง','ผ้าถุงป้าย','เดรส'];
 const SIZES = ['XS','S','M','L','XL','XXL','3XL','4XL','5XL','custom'];
@@ -209,7 +211,7 @@ function saveProduct(i){
   const code=document.getElementById('edit-code-'+i)?.value.trim();
   const name=document.getElementById('edit-name-'+i)?.value.trim();
   if(!code||!name){alert('กรุณากรอกรหัสและชื่อสินค้า');return;}
-  PRODUCTS[i]={code,name};
+  PRODUCTS[i]={...PRODUCTS[i],code,name};
   renderProdList();refreshAllProductDropdowns();
 }
 
@@ -254,21 +256,44 @@ function setShipType(type){
   updateTotal();
 }
 
+function clearAutoPrice(id){
+  const item=document.getElementById('item-'+id);
+  if(item)item.dataset.autoPrice='false';
+}
+
+function onProductChange(id){
+  const item=document.getElementById('item-'+id);
+  const selectedName=document.getElementById('prod-'+id)?.value||'';
+  const product=PRODUCTS.find(p=>p.name===selectedName);
+  const priceInput=document.getElementById('price-'+id);
+  const saleInput=document.getElementById('sale-'+id);
+  if(product&&Number.isFinite(product.price)&&Number.isFinite(product.sale)){
+    priceInput.value=product.price;
+    saleInput.value=product.sale;
+    item.dataset.autoPrice='true';
+  }else if(item?.dataset.autoPrice==='true'){
+    priceInput.value='';
+    saleInput.value='';
+    item.dataset.autoPrice='false';
+  }
+  updateTotal();
+}
+
 function addItem(){
   itemCount++;const id=itemCount;
   const div=document.createElement('div');div.className='item-block';div.id='item-'+id;
   div.innerHTML=`
     <button class="remove-btn" onclick="removeItem(${id})">✕</button>
     <div class="item-num">รายการที่ ${id}</div>
-    <div class="field"><label>รุ่นสินค้า</label><select id="prod-${id}">${prodOpts()}</select></div>
+    <div class="field"><label>รุ่นสินค้า</label><select id="prod-${id}" onchange="onProductChange(${id})">${prodOpts()}</select></div>
     <div style="font-size:11px;color:#888;margin-bottom:6px;">ชิ้นที่สั่ง</div>
     <div id="pieces-${id}"></div>
     <button class="add-piece-btn" onclick="addPiece(${id})">+ เพิ่มชิ้น</button>
     <div class="price-section">
       <div class="price-section-title">ราคา</div>
       <div class="row2">
-        <div class="field"><label>ราคาปกติ (฿)</label><input type="number" id="price-${id}" placeholder="0" oninput="updateTotal()"></div>
-        <div class="field"><label>ราคาโปร (฿)</label><input type="number" id="sale-${id}" placeholder="ถ้ามี" oninput="updateTotal()"></div>
+        <div class="field"><label>ราคาปกติ (฿)</label><input type="number" id="price-${id}" placeholder="0" oninput="clearAutoPrice(${id});updateTotal()"></div>
+        <div class="field"><label>ราคาโปร (฿)</label><input type="number" id="sale-${id}" placeholder="ถ้ามี" oninput="clearAutoPrice(${id});updateTotal()"></div>
       </div>
       <div class="field"><label>ค่าไซส์พิเศษ (฿)</label><input type="number" id="extra-${id}" placeholder="0" oninput="updateTotal()"></div>
     </div>
